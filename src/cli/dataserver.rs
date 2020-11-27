@@ -39,7 +39,7 @@ pub enum DataserverCommand {
 pub fn run_dataserver_command(command: &DataserverCLI) {
     match &command.cmd {
         DataserverCommand::Start(cmd) => {
-            println!("Starting server at host {}:{}...", cmd.host, cmd.port);
+            info!("Starting server at host {}:{}...", cmd.host, cmd.port);
         }
     }
 }
