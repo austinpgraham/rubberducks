@@ -10,9 +10,12 @@
 extern crate log;
 
 extern crate structopt;
-extern crate dotenv;
 extern crate fern;
 extern crate chrono;
+extern crate juniper;
+extern crate juniper_rocket;
+extern crate rocket;
+extern crate dirs;
 
 pub mod cli;
 
@@ -43,7 +46,6 @@ fn setup_logger() -> Result<(), fern::InitError> {
 
 
 fn main() {
-    dotenv::dotenv().ok();
     setup_logger().expect("Could not configure logger.");
     
     // Let's fire off the command!!
@@ -52,8 +54,6 @@ fn main() {
 
         // For our dataserver...
         Command::Dataserver(cmd) => cli::dataserver::run_dataserver_command(&cmd),
-        _ => {
-            println!("Unknown command. Exiting.")
-        }
+        Command::Environment(cmd) => cli::environment::run_environment_command(&cmd)
     }
 }
