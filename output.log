@@ -1,2 +1,5 @@
 [2020-11-27][20:54:54][rd::cli::dataserver][INFO] Starting server at host 0.0.0.0:5555...
 [2020-11-27][21:49:41][rd::cli::environment][INFO] /Users/austingraham/.rd
+[2020-11-27][22:43:24][rd::cli::environment][ERROR] Is a directory (os error 21)
+[2020-11-27][22:53:42][rd::cli::environment][INFO] RD_HOME: /Users/austingraham/.rd
+[2020-11-27][22:53:49][rd::cli::environment][INFO] RD_HOME: /Users/austingraham/.rd
