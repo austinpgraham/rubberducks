@@ -1,4 +1,4 @@
-#![feature(proc_macro_hygiene, decl_macro)]
+#![feature(proc_macro_hygiene, decl_macro, with_options)]
 #![crate_name = "rd"]
 /**
 * The primary entry point into the CLI of Rubber Ducks, where

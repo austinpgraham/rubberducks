@@ -3,3 +3,11 @@
 [2020-11-27][22:43:24][rd::cli::environment][ERROR] Is a directory (os error 21)
 [2020-11-27][22:53:42][rd::cli::environment][INFO] RD_HOME: /Users/austingraham/.rd
 [2020-11-27][22:53:49][rd::cli::environment][INFO] RD_HOME: /Users/austingraham/.rd
+[2020-11-27][23:17:46][rd::cli::environment][INFO] RD_HOME: /Users/austingraham/.rd
+[2020-11-27][23:26:31][rd::cli::environment][INFO] Successfully set environment variable
+[2020-11-27][23:26:43][rd::cli::environment][INFO] RD_HOME: /Users/austingraham/.rdRD_TEST
+[2020-11-27][23:27:34][rd::cli::environment][INFO] RD_HOME: /Users/austingraham/.rdRD_TEST
+[2020-11-27][23:27:46][rd::cli::environment][INFO] RD_HOME: /Users/austingraham/.rd
+[2020-11-27][23:27:54][rd::cli::environment][INFO] Successfully set environment variable
+[2020-11-27][23:27:58][rd::cli::environment][INFO] RD_HOME: /Users/austingraham/.rd
+[2020-11-27][23:27:58][rd::cli::environment][INFO] RD_TEST: SomeOtherValue

@@ -28,13 +28,30 @@ pub struct EnvironmentCLI {
 }
 
 #[derive(Debug, StructOpt)]
+pub struct SetEnvCLI {
+    #[structopt(
+        short,
+        long,
+        about = "The variable key for the environment."
+    )]
+    key: String,
+
+    #[structopt(
+        short,
+        long,
+        about = "The variable value for the environment."
+    )]
+    value: String
+}
+
+#[derive(Debug, StructOpt)]
 pub enum EnvironmentCommand {
 
     #[structopt(about = "Lists all environment variables known to the CLI.")]
     GetEnv,
 
     #[structopt(about = "Sets an environment variable.")]
-    SetEnv
+    SetEnv(SetEnvCLI)
 }
 
 pub fn get_or_create_rd_home() -> Result<String, String> {
@@ -70,7 +87,7 @@ pub fn get_or_create_env_file() -> Result<String, String> {
         match File::create::<&PathBuf>(&env_path) {
             Ok(mut file) => {
                 // If we've created the file, we need to write RD_HOME
-                match file.write_all(format!("RD_HOME={}", home_dir).as_bytes()) {
+                match file.write_all(format!("RD_HOME={}\n", home_dir).as_bytes()) {
                     Ok(()) => {
                         if file.sync_data().is_err() {
                             error!("There was an error syncing environment data with disk.")
@@ -116,8 +133,22 @@ pub fn get_env() -> Result<HashMap<String, String>, String> {
     Ok(var_map)
 }
 
+pub fn write_to_env(vars: &HashMap<String, String>) -> Result<(), String> {
+    let mut env_file = File::with_options().write(true).open(get_or_create_env_file()?).unwrap();
+
+    vars.iter().for_each(|(key, value)| {
+        env_file.write_all(format!("{}={}\n", key, value).as_bytes()).unwrap();
+    });
+
+    // Make sure it all gets to disk
+    match env_file.sync_data() {
+        Ok(_) => Ok(()),
+        Err(err) => Err(err.to_string())
+    }
+}
+
 pub fn run_environment_command(command: &EnvironmentCLI) {
-    match command.cmd {
+    match &command.cmd {
         EnvironmentCommand::GetEnv => {
             let variables = match get_env() {
                 Ok(v) => v,
@@ -130,6 +161,19 @@ pub fn run_environment_command(command: &EnvironmentCLI) {
             // Write them all out to standard out
             variables.iter().for_each(|(k, v)| info!("{}: {}", k, v));
         },
-        _ => info!("Not yet implemented.")
+        EnvironmentCommand::SetEnv(new_var) => {
+            if let Ok(mut variables) = get_env() {
+                // Add the new variable
+                variables.insert(new_var.key.clone(), new_var.value.clone());
+
+                match write_to_env(&variables) {
+                    Ok(()) => info!("Successfully set environment variable"),
+                    Err(msg) => error!("{}", msg)
+                }
+
+            } else {
+                error!("There was an error retrieving environment configuration.");
+            }
+        }
     }
 }
