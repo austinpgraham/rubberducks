@@ -46,6 +46,9 @@ fn setup_logger() -> Result<(), fern::InitError> {
 
 
 fn main() {
+    // Set all known environment variables
+    cli::environment::set_environment();
+
     setup_logger().expect("Could not configure logger.");
     
     // Let's fire off the command!!

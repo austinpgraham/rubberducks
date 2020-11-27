@@ -160,6 +160,19 @@ pub fn write_to_env(vars: &HashMap<String, String>) -> Result<(), String> {
     }
 }
 
+pub fn set_environment() -> Result<(), String> {
+    match get_env() {
+        Ok(variables) => {
+            variables.iter().for_each(|(key, value)| {
+                env::set_var(key, value);
+            });
+
+            Ok(())
+        },
+        Err(msg) => Err(msg)
+    }
+}
+
 pub fn run_environment_command(command: &EnvironmentCLI) {
     match &command.cmd {
         EnvironmentCommand::GetEnv => {
