@@ -47,7 +47,9 @@ fn setup_logger() -> Result<(), fern::InitError> {
 
 fn main() {
     // Set all known environment variables
-    cli::environment::set_environment();
+    if cli::environment::set_environment().is_err() {
+        error!("Failed to set process environment.");
+    }
 
     setup_logger().expect("Could not configure logger.");
     
