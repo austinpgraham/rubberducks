@@ -9,27 +9,37 @@ use structopt::StructOpt;
 pub struct DataserverCLI {
 
     #[structopt(subcommand)]
-    start: DataserverCommand
+    pub cmd: DataserverCommand
 }
 
 #[derive(Debug, StructOpt)]
-enum DataserverCommand {
-    Start {
+pub struct StartCLI {
+    #[structopt(
+        default_value = "0.0.0.0",
+        help = "Host on which the server will be exposed.",
+        short,
+        long
+    )]
+    host: String,
 
-        #[structopt(
-            default_value = "0.0.0.0",
-            help = "Host on which the server will be exposed.",
-            short,
-            long
-        )]
-        host: String,
+    #[structopt(
+        default_value = "5555",
+        help = "Port on which the server will be exposed.",
+        short,
+        long
+    )]
+    port: i32
+}
 
-        #[structopt(
-            default_value = "5555",
-            help = "Port on which the server will be exposed.",
-            short,
-            long
-        )]
-        port: i32
+#[derive(Debug, StructOpt)]
+pub enum DataserverCommand {
+    Start(StartCLI)
+}
+
+pub fn run_dataserver_command(command: &DataserverCLI) {
+    match &command.cmd {
+        DataserverCommand::Start(cmd) => {
+            println!("Starting server at host {}:{}...", cmd.host, cmd.port);
+        }
     }
 }

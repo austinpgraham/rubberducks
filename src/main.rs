@@ -6,11 +6,21 @@
 // External crates
 extern crate structopt;
 
-use structopt::StructOpt;
-
 pub mod cli;
+
+use structopt::StructOpt;
+use cli::Command;
 
 fn main() {
     let opts = cli::RD::from_args();
-    println!("{:?}", opts);
+    
+    // Let's fire off the command!!
+    match opts.cmd {
+
+        // For our dataserver...
+        Command::Dataserver(cmd) => cli::dataserver::run_dataserver_command(&cmd),
+        _ => {
+            println!("Unknown command. Exiting.")
+        }
+    }
 }

@@ -5,6 +5,7 @@
 use structopt::StructOpt;
 
 pub mod dataserver;
+pub mod environment;
 
 #[derive(Debug, StructOpt)]
 #[structopt(
@@ -12,10 +13,11 @@ pub mod dataserver;
     about = "Welcome to Rubber Duck! This CLI assists you in completing all your necessary tasks related to the Rubber Duck environment.")]
 pub struct RD {
     #[structopt(subcommand)]
-    cmd: Command
+    pub cmd: Command
 }
 
 #[derive(Debug, StructOpt)]
-enum Command {
-    Dataserver(dataserver::DataserverCLI)
+pub enum Command {
+    Dataserver(dataserver::DataserverCLI),
+    Environment(environment::EnvironmentCLI)
 }
