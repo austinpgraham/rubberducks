@@ -45,13 +45,26 @@ pub struct SetEnvCLI {
 }
 
 #[derive(Debug, StructOpt)]
+pub struct RemoveEnvCLI {
+    #[structopt(
+        short,
+        long,
+        about = "The variable key to remove from environment."
+    )]
+    key: String
+}
+
+#[derive(Debug, StructOpt)]
 pub enum EnvironmentCommand {
 
     #[structopt(about = "Lists all environment variables known to the CLI.")]
     GetEnv,
 
     #[structopt(about = "Sets an environment variable.")]
-    SetEnv(SetEnvCLI)
+    SetEnv(SetEnvCLI),
+
+    #[structopt(about = "Removes an item from the environment.")]
+    RemoveEnv(RemoveEnvCLI)
 }
 
 pub fn get_or_create_rd_home() -> Result<String, String> {
@@ -168,6 +181,20 @@ pub fn run_environment_command(command: &EnvironmentCLI) {
 
                 match write_to_env(&variables) {
                     Ok(()) => info!("Successfully set environment variable"),
+                    Err(msg) => error!("{}", msg)
+                }
+
+            } else {
+                error!("There was an error retrieving environment configuration.");
+            }
+        },
+        EnvironmentCommand::RemoveEnv(remove_var) => {
+            if let Ok(mut variables) = get_env() {
+                // Add the new variable
+                variables.remove(&remove_var.key);
+
+                match write_to_env(&variables) {
+                    Ok(()) => info!("Successfully removed environment variable"),
                     Err(msg) => error!("{}", msg)
                 }
 

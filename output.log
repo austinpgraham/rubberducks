@@ -11,3 +11,13 @@
 [2020-11-27][23:27:54][rd::cli::environment][INFO] Successfully set environment variable
 [2020-11-27][23:27:58][rd::cli::environment][INFO] RD_HOME: /Users/austingraham/.rd
 [2020-11-27][23:27:58][rd::cli::environment][INFO] RD_TEST: SomeOtherValue
+[2020-11-27][23:30:40][rd::cli::environment][INFO] Successfully set environment variable
+[2020-11-27][23:30:51][rd::cli::environment][INFO] RD_HOME: /Users/austingraham/.rd
+[2020-11-27][23:30:51][rd::cli::environment][INFO] RD_TEST: SomeOtherValue
+[2020-11-27][23:34:38][rd::cli::environment][INFO] Successfully removed environment variable
+[2020-11-27][23:34:58][rd::cli::environment][INFO] RD_HOME: /Users/austingraham/.rd
+[2020-11-27][23:35:20][rd::cli::environment][INFO] RD_HOME: /Users/austingraham/.rd
+[2020-11-27][23:35:38][rd::cli::environment][INFO] Successfully set environment variable
+[2020-11-27][23:35:42][rd::cli::environment][INFO] RD_TEST: something test
+[2020-11-27][23:35:42][rd::cli::environment][INFO] RD_HOME: /Users/austingraham/.rd
+[2020-11-27][23:36:05][rd::cli::environment][INFO] Successfully removed environment variable
