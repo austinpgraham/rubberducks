@@ -119,6 +119,13 @@ pub fn get_or_create_rd_home() -> Result<String, String> {
 pub fn get_or_create_log_file() -> Result<String, String> {
     let mut file_path = PathBuf::from(get_or_create_rd_home()?);
     let current_timestamp = SystemTime::now().duration_since(UNIX_EPOCH).expect("It seems time went backwards...");
+    file_path.push("logs");
+
+    // Create the logs directory if it doesn't already exists
+    if !file_path.exists() && create_dir::<&PathBuf>(&file_path).is_err() {
+        return Err(String::from("Failed to create logs directory."));
+    }
+
     file_path.push(format!("output-{}.log", current_timestamp.as_secs() / 86400).as_str());
 
     // Create the file and return out the path
