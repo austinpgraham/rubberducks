@@ -1,3 +1,8 @@
 /target
-*.log
-**/*.log
+
+#Logs
+out/
+output.log
+
+#Visual Studio Code
+**/.vscode/
