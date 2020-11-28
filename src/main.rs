@@ -45,6 +45,7 @@ fn setup_logger() -> Result<(), fern::InitError> {
 }
 
 
+/// Entry point of the CLI
 fn main() {
     // Set all known environment variables
     if cli::environment::set_environment().is_err() {

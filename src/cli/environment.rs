@@ -19,14 +19,17 @@ use std::{
 use dirs::home_dir;
 use structopt::StructOpt;
 
+/// Passthrough for subcommands of the `environment` command
 #[derive(Debug, StructOpt)]
 #[structopt(name = "env")]
 pub struct EnvironmentCLI {
 
+    /// Command representative object.
     #[structopt(subcommand)]
     pub cmd: EnvironmentCommand
 }
 
+/// Command arg options for setting an environment variable.
 #[derive(Debug, StructOpt)]
 pub struct SetEnvCLI {
     #[structopt(
@@ -44,6 +47,7 @@ pub struct SetEnvCLI {
     value: String
 }
 
+/// Command arg options for removing an environment variable
 #[derive(Debug, StructOpt)]
 pub struct RemoveEnvCLI {
     #[structopt(
@@ -54,6 +58,7 @@ pub struct RemoveEnvCLI {
     key: String
 }
 
+/// Enum listing the various subcommands of the `environment` command.
 #[derive(Debug, StructOpt)]
 pub enum EnvironmentCommand {
 
@@ -67,6 +72,14 @@ pub enum EnvironmentCommand {
     RemoveEnv(RemoveEnvCLI)
 }
 
+/// Returns the RD_HOME environment variable, creating
+/// the directory if it does not already exist.
+/// 
+/// # Examples
+/// ```
+/// let home_dir = get_or_create_rd_home().unwrap();
+/// ```
+#[inline]
 pub fn get_or_create_rd_home() -> Result<String, String> {
     let home_directory = match env::var("RD_HOME") {
         Ok(home) => PathBuf::from(home),
@@ -90,6 +103,15 @@ pub fn get_or_create_rd_home() -> Result<String, String> {
     }
 }
 
+/// Get's the environment variable file contained in the configuration
+/// or creates it if it does not already exist. If it is first created,
+/// then the RD_HOME variable is inserted immediately.
+/// 
+/// # Examples
+/// ```
+/// let env_file = get_or_create_env_file.unwrap();
+/// ```
+#[inline]
 pub fn get_or_create_env_file() -> Result<String, String> {
     let home_dir = get_or_create_rd_home()?;
     let mut env_path = PathBuf::from(&home_dir);
@@ -117,6 +139,15 @@ pub fn get_or_create_env_file() -> Result<String, String> {
     }
 }
 
+/// Get's a HashMap representing all known environment variables
+/// in the configuration. Ownership of this structured is returned
+/// to the caller.
+/// 
+/// # Examples
+/// ```
+/// let variables = get_env().unwrap();
+/// ```
+#[inline]
 pub fn get_env() -> Result<HashMap<String, String>, String> {
     let mut var_map: HashMap<String, String> = HashMap::new();
     let home_directory = match get_or_create_env_file() {
@@ -146,9 +177,18 @@ pub fn get_env() -> Result<HashMap<String, String>, String> {
     Ok(var_map)
 }
 
+/// Write a HashMap of assumed variables to the env file.
+/// 
+/// # Examples
+/// ```
+/// if write_to_env(&variables).is_ok() {
+///     // Code here
+/// }
+/// ```
 pub fn write_to_env(vars: &HashMap<String, String>) -> Result<(), String> {
     let mut env_file = File::with_options().write(true).open(get_or_create_env_file()?).unwrap();
 
+    // Iteratively write all data
     vars.iter().for_each(|(key, value)| {
         env_file.write_all(format!("{}={}\n", key, value).as_bytes()).unwrap();
     });
@@ -160,9 +200,20 @@ pub fn write_to_env(vars: &HashMap<String, String>) -> Result<(), String> {
     }
 }
 
+/// Loads all environment variables in configuration into the
+/// the current process environment.
+/// 
+/// # Examples
+/// ```
+/// if set_environment().is_ok() {
+///     // Do stuff here
+/// }
+/// ```
 pub fn set_environment() -> Result<(), String> {
     match get_env() {
         Ok(variables) => {
+
+            // Iteratively set each variable
             variables.iter().for_each(|(key, value)| {
                 env::set_var(key, value);
             });
@@ -173,8 +224,20 @@ pub fn set_environment() -> Result<(), String> {
     }
 }
 
+/// Run a given environment command from the CLI
+/// 
+/// # Arguments
+/// * `command` - The command to run
+/// 
+/// # Examples
+/// ```
+/// run_environment_command(&command_from_cli);
+/// ```
+#[inline]
 pub fn run_environment_command(command: &EnvironmentCLI) {
     match &command.cmd {
+
+        // Get current environment
         EnvironmentCommand::GetEnv => {
             let variables = match get_env() {
                 Ok(v) => v,
@@ -187,6 +250,8 @@ pub fn run_environment_command(command: &EnvironmentCLI) {
             // Write them all out to standard out
             variables.iter().for_each(|(k, v)| info!("{}: {}", k, v));
         },
+
+        // Set a new variable
         EnvironmentCommand::SetEnv(new_var) => {
             if let Ok(mut variables) = get_env() {
                 // Add the new variable
@@ -201,6 +266,8 @@ pub fn run_environment_command(command: &EnvironmentCLI) {
                 error!("There was an error retrieving environment configuration.");
             }
         },
+
+        // Remove an environment variable
         EnvironmentCommand::RemoveEnv(remove_var) => {
             if let Ok(mut variables) = get_env() {
                 // Add the new variable

@@ -4,6 +4,7 @@
 */
 use structopt::StructOpt;
 
+/// Passthrough command for the dataserver subcommand of `rd`
 #[derive(Debug, StructOpt)]
 #[structopt(name = "dataserver")]
 pub struct DataserverCLI {
@@ -12,6 +13,7 @@ pub struct DataserverCLI {
     pub cmd: DataserverCommand
 }
 
+/// Options for the server start CLI
 #[derive(Debug, StructOpt)]
 pub struct StartCLI {
     #[structopt(
@@ -31,11 +33,21 @@ pub struct StartCLI {
     port: i32
 }
 
+/// Listing all options for the the dataserver subcommand.
 #[derive(Debug, StructOpt)]
 pub enum DataserverCommand {
     Start(StartCLI)
 }
 
+/// Run a dataserver command.
+/// 
+/// # Arguments
+/// * `command` - Command to run on the dataserver.
+/// 
+/// # Examples
+/// ```
+/// run_dataserver_command(&command);
+/// ```
 pub fn run_dataserver_command(command: &DataserverCLI) {
     match &command.cmd {
         DataserverCommand::Start(cmd) => {
