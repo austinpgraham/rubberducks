@@ -200,7 +200,7 @@ pub fn get_env() -> Result<HashMap<String, String>, String> {
         };
 
         // Split out the the environment information and put into the HashMap
-        let env_content = env_line.split("=").map(|s| String::from(s)).collect::<Vec<String>>();
+        let env_content = env_line.splitn(2, "=").map(|s| String::from(s)).collect::<Vec<String>>();
         if env_content.len() < 2 {
             // Skip bad lines
             continue;

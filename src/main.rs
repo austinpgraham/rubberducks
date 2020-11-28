@@ -18,6 +18,7 @@ extern crate rocket;
 extern crate dirs;
 
 pub mod cli;
+pub mod dataserver;
 
 use structopt::StructOpt;
 use cli::Command;
