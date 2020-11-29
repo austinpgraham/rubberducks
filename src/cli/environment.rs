@@ -215,6 +215,12 @@ pub fn get_env() -> Result<HashMap<String, String>, String> {
     Ok(var_map)
 }
 
+/// Get the server PID file
+/// 
+/// # Example
+/// ```
+/// let file_path = get_server_pid_file().expect("Oh dear...");
+/// ```
 #[inline]
 pub fn get_server_pid_file() -> Result<String, String> {
     let mut pid_file = PathBuf::from(get_or_create_rd_home()?);
@@ -227,9 +233,20 @@ pub fn get_server_pid_file() -> Result<String, String> {
     }
 }
 
+/// Write the new process PID to the PID file.
+/// 
+/// # Arguments
+/// * `pid` - New process ID for the file
+/// 
+/// # Example
+/// ```
+/// let file_path = write_server_pid_file(process_id).expect("Oh dear...");
+/// ```
 #[inline]
 pub fn write_server_pid_file(pid: u32) -> Result<String, String> {
     match get_server_pid_file() {
+
+        // Overwrite the current file
         Ok(path) => {
             let mut pid_file = File::with_options().write(true).open(path.clone()).expect("Failed to open PID file to save new ID.");
             pid_file.write_all(format!("{}", pid).as_bytes()).expect("Failed to write data to PID file.");
@@ -239,6 +256,8 @@ pub fn write_server_pid_file(pid: u32) -> Result<String, String> {
                 Err(err) => Err(err.to_string())
             }
         },
+
+        // Create and write data to the file
         Err(_) => {
             let mut pid_file = PathBuf::from(get_or_create_rd_home()?);
             pid_file.push("server.pid");
@@ -253,6 +272,12 @@ pub fn write_server_pid_file(pid: u32) -> Result<String, String> {
     }
 }
 
+/// Delete the PID file and return the PID it contains
+/// 
+/// # Example
+/// ```
+/// let pid = remove_pid_file().expect("Oh dear...");
+/// ```
 #[inline]
 pub fn remove_pid_file() -> Result<u32, String> {
     match get_server_pid_file() {
