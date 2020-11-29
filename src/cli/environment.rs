@@ -6,7 +6,9 @@ use std::{
     env,
     fs::{
         File,
-        create_dir
+        create_dir,
+        remove_file,
+        read_to_string
     },
     io::{
         BufReader,
@@ -200,7 +202,7 @@ pub fn get_env() -> Result<HashMap<String, String>, String> {
         };
 
         // Split out the the environment information and put into the HashMap
-        let env_content = env_line.split("=").map(|s| String::from(s)).collect::<Vec<String>>();
+        let env_content = env_line.splitn(2, "=").map(|s| String::from(s)).collect::<Vec<String>>();
         if env_content.len() < 2 {
             // Skip bad lines
             continue;
@@ -211,6 +213,87 @@ pub fn get_env() -> Result<HashMap<String, String>, String> {
         var_map.insert(variable, value);
     }
     Ok(var_map)
+}
+
+/// Get the server PID file
+/// 
+/// # Example
+/// ```
+/// let file_path = get_server_pid_file().expect("Oh dear...");
+/// ```
+#[inline]
+pub fn get_server_pid_file() -> Result<String, String> {
+    let mut pid_file = PathBuf::from(get_or_create_rd_home()?);
+    pid_file.push("server.pid");
+
+    if pid_file.exists() {
+        Ok(String::from(pid_file.to_str().unwrap()))
+    } else {
+        Err(String::from("Failed to retrieve server PID file."))
+    }
+}
+
+/// Write the new process PID to the PID file.
+/// 
+/// # Arguments
+/// * `pid` - New process ID for the file
+/// 
+/// # Example
+/// ```
+/// let file_path = write_server_pid_file(process_id).expect("Oh dear...");
+/// ```
+#[inline]
+pub fn write_server_pid_file(pid: u32) -> Result<String, String> {
+    match get_server_pid_file() {
+
+        // Overwrite the current file
+        Ok(path) => {
+            let mut pid_file = File::with_options().write(true).open(path.clone()).expect("Failed to open PID file to save new ID.");
+            pid_file.write_all(format!("{}", pid).as_bytes()).expect("Failed to write data to PID file.");
+
+            match pid_file.sync_data() {
+                Ok(()) => Ok(path.clone()),
+                Err(err) => Err(err.to_string())
+            }
+        },
+
+        // Create and write data to the file
+        Err(_) => {
+            let mut pid_file = PathBuf::from(get_or_create_rd_home()?);
+            pid_file.push("server.pid");
+            let mut new_pid_file = File::create(pid_file.clone()).expect("Failed to create PID file.");
+
+            new_pid_file.write_all(format!("{}", pid).as_bytes()).expect("Failed to write data to PID file.");
+            match new_pid_file.sync_data() {
+                Ok(()) => Ok(String::from(pid_file.clone().to_str().unwrap())),
+                Err(err) => Err(err.to_string())
+            }
+        }
+    }
+}
+
+/// Delete the PID file and return the PID it contains
+/// 
+/// # Example
+/// ```
+/// let pid = remove_pid_file().expect("Oh dear...");
+/// ```
+#[inline]
+pub fn remove_pid_file() -> Result<u32, String> {
+    match get_server_pid_file() {
+        Ok(path) => {
+            // First read the file to get the PID then
+            // remove the file
+            let pid_string = read_to_string::<&String>(&path).expect("Failed ot read PID into memory.");
+            let pid = pid_string.trim().parse::<u32>().expect("Failed to parse PID into integer.");
+
+            match remove_file(path) {
+                Ok(()) => Ok(pid),
+                Err(err) => Err(err.to_string())
+            }
+        },
+        Err(err) => Err(err.to_string())
+    }
 }
 
 /// Write a HashMap of assumed variables to the env file.

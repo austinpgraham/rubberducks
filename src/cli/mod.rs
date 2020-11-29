@@ -3,6 +3,14 @@
 * Duck CLI.
 */
 use structopt::StructOpt;
+use std::{
+    path::PathBuf,
+    process::Command as OsCommand,
+    io::{
+        stdout,
+        Write
+    }
+};
 
 pub mod dataserver;
 pub mod environment;
@@ -19,6 +27,21 @@ pub struct RD {
     pub cmd: Command
 }
 
+#[derive(Debug, StructOpt)]
+#[structopt(
+    about = "Install the rd executable."
+)]
+pub struct InstallCLI {
+
+    #[structopt(
+        short,
+        long,
+        help = "Directory of the executable source.",
+        parse(from_os_str)
+    )]
+    source_dir: PathBuf
+}
+
 /// Enumeration the lists the different subcommands
 /// of the root CLI.
 #[derive(Debug, StructOpt)]
@@ -28,5 +51,45 @@ pub enum Command {
     Dataserver(dataserver::DataserverCLI),
 
     /// To configure the environment
-    Environment(environment::EnvironmentCLI)
+    Environment(environment::EnvironmentCLI),
+
+    /// Install the executable
+    Install(InstallCLI)
+}
+
+#[inline]
+pub fn install_executable(command: &InstallCLI) {
+    let source_directory = &command.source_dir;
+    if !source_directory.exists() {
+        error!("Source directory was not found.");
+    } else {
+        info!("Beginning compilation...");
+        
+        // First run the cargo build release
+        let compile_command = OsCommand::new("cargo")
+                                        .current_dir(source_directory)
+                                        .arg("build")
+                                        .arg("--release")
+                                        .output()
+                                        .expect("Failed to spawn compilation process.");
+        stdout().write_all(&compile_command.stdout).expect("Failed to write status to stdout.");
+        if !compile_command.status.success() {
+            panic!("Failed to compile from source.");
+        }
+
+        // And now we move the executable
+        info!("Moving to bin...");
+        let move_command = OsCommand::new("mv")
+                                        .current_dir(source_directory)
+                                        .arg("./target/release/rd")
+                                        .arg("/usr/local/bin")
+                                        .output()
+                                        .expect("Failed to install executable.");
+        stdout().write_all(&compile_command.stdout).expect("Failed to write status to stdout.");
+        if !move_command.status.success() {
+            panic!("Failed to install executable. Either there was an error copying the executable or it was not refreshed.");
+        }
+
+        info!("Completed installation test.");
+    }
 }
