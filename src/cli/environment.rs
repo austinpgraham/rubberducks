@@ -6,7 +6,9 @@ use std::{
     env,
     fs::{
         File,
-        create_dir
+        create_dir,
+        remove_file,
+        read_to_string
     },
     io::{
         BufReader,
@@ -248,6 +250,24 @@ pub fn write_server_pid_file(pid: u32) -> Result<String, String> {
                 Err(err) => Err(err.to_string())
             }
         }
+    }
+}
+
+#[inline]
+pub fn remove_pid_file() -> Result<u32, String> {
+    match get_server_pid_file() {
+        Ok(path) => {
+            // First read the file to get the PID then
+            // remove the file
+            let pid_string = read_to_string::<&String>(&path).expect("Failed ot read PID into memory.");
+            let pid = pid_string.trim().parse::<u32>().expect("Failed to parse PID into integer.");
+
+            match remove_file(path) {
+                Ok(()) => Ok(pid),
+                Err(err) => Err(err.to_string())
+            }
+        },
+        Err(err) => Err(err.to_string())
     }
 }
 
