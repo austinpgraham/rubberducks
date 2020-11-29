@@ -68,6 +68,7 @@ fn main() {
 
         // For our dataserver...
         Command::Dataserver(cmd) => cli::dataserver::run_dataserver_command(&cmd),
-        Command::Environment(cmd) => cli::environment::run_environment_command(&cmd)
+        Command::Environment(cmd) => cli::environment::run_environment_command(&cmd),
+        Command::Install(cmd) => cli::install_executable(&cmd)
     }
 }

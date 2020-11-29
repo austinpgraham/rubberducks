@@ -3,9 +3,14 @@
 * the dataserver for Rubber Duck
 */
 use structopt::StructOpt;
+use std::process::Command;
 
 // Local imports
 use crate::dataserver;
+use crate::cli::environment::{
+    write_server_pid_file,
+    get_server_pid_file
+};
 
 /// Passthrough command for the dataserver subcommand of `rd`
 #[derive(Debug, StructOpt)]
@@ -69,7 +74,33 @@ pub fn run_dataserver_command(command: &DataserverCLI) {
 
         // Start as separate process
         DataserverCommand::Start(cmd) => {
-            info!("Starting server at host {}:{}...", cmd.host, cmd.port);
+            info!("Spawning server process at {}:{}...", cmd.host, cmd.port);
+
+            // We only want to spawn a process if there's not already a running process
+            if get_server_pid_file().is_ok() {
+                panic!("Cannot start server: process already exists.");
+            }
+
+            // Spawn the process
+            let mut server_process = Command::new("rd")
+                                            .arg("dataserver")
+                                            .arg("raw-start")
+                                            .arg("-h")
+                                            .arg(format!("{}", cmd.host))
+                                            .arg("-p")
+                                            .arg(format!("{}", cmd.port))
+                                            .arg("-w")
+                                            .arg(format!("{}", cmd.workers))
+                                            .spawn()
+                                            .expect("Failed to start server process.");
+            
+            // Write the server process ID
+            if write_server_pid_file(server_process.id()).is_err() {
+                server_process.kill().expect("Failed to kill process on failure to write new process ID.");
+                panic!("Failed to write process ID to file.");
+            }
+
+            info!("Spawned server process with PID {}.", server_process.id());
         },
 
         // Start server and wait

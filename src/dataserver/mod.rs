@@ -23,7 +23,6 @@ pub fn start_dataserver(host: &str, port: u16, workers: u16) {
                         .finalize()
                         .expect("Failed to establish configuration for app.");
     let app = rocket::custom(config);
-
-        app.mount("/", rocket::routes![health_check])
-           .launch();
+    app.mount("/", rocket::routes![health_check])
+        .launch();
 }

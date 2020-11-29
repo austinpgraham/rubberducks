@@ -213,6 +213,44 @@ pub fn get_env() -> Result<HashMap<String, String>, String> {
     Ok(var_map)
 }
 
+#[inline]
+pub fn get_server_pid_file() -> Result<String, String> {
+    let mut pid_file = PathBuf::from(get_or_create_rd_home()?);
+    pid_file.push("server.pid");
+
+    if pid_file.exists() {
+        Ok(String::from(pid_file.to_str().unwrap()))
+    } else {
+        Err(String::from("Failed to retrieve server PID file."))
+    }
+}
+
+#[inline]
+pub fn write_server_pid_file(pid: u32) -> Result<String, String> {
+    match get_server_pid_file() {
+        Ok(path) => {
+            let mut pid_file = File::with_options().write(true).open(path.clone()).expect("Failed to open PID file to save new ID.");
+            pid_file.write_all(format!("{}", pid).as_bytes()).expect("Failed to write data to PID file.");
+
+            match pid_file.sync_data() {
+                Ok(()) => Ok(path.clone()),
+                Err(err) => Err(err.to_string())
+            }
+        },
+        Err(_) => {
+            let mut pid_file = PathBuf::from(get_or_create_rd_home()?);
+            pid_file.push("server.pid");
+            let mut new_pid_file = File::create(pid_file.clone()).expect("Failed to create PID file.");
+
+            new_pid_file.write_all(format!("{}", pid).as_bytes()).expect("Failed to write data to PID file.");
+            match new_pid_file.sync_data() {
+                Ok(()) => Ok(String::from(pid_file.clone().to_str().unwrap())),
+                Err(err) => Err(err.to_string())
+            }
+        }
+    }
+}
+
 /// Write a HashMap of assumed variables to the env file.
 /// 
 /// # Examples
