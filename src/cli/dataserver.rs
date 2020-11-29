@@ -3,13 +3,24 @@
 * the dataserver for Rubber Duck
 */
 use structopt::StructOpt;
-use std::process::Command;
+use std::{
+    process::{
+        Command,
+        Stdio
+    },
+    fs::File,
+    os::unix::io::{
+        AsRawFd,
+        FromRawFd
+    }
+};
 
 // Local imports
 use crate::dataserver;
 use crate::cli::environment::{
     write_server_pid_file,
-    get_server_pid_file
+    get_server_pid_file,
+    get_or_create_log_file
 };
 
 /// Passthrough command for the dataserver subcommand of `rd`
@@ -81,6 +92,12 @@ pub fn run_dataserver_command(command: &DataserverCLI) {
                 panic!("Cannot start server: process already exists.");
             }
 
+            // Get the log file to out to
+            let log_file_path = get_or_create_log_file().expect("Failed to create log file.");
+            let log_file = File::with_options().write(true).open(log_file_path).expect("Failed to open log file.");
+            let log_file_fd = log_file.as_raw_fd();
+            let out = unsafe {Stdio::from_raw_fd(log_file_fd)};
+
             // Spawn the process
             let mut server_process = Command::new("rd")
                                             .arg("dataserver")
@@ -91,6 +108,7 @@ pub fn run_dataserver_command(command: &DataserverCLI) {
                                             .arg(format!("{}", cmd.port))
                                             .arg("-w")
                                             .arg(format!("{}", cmd.workers))
+                                            .stdout(out)
                                             .spawn()
                                             .expect("Failed to start server process.");
             

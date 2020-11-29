@@ -28,13 +28,6 @@ use cli::Command;
 /// By default, this will log to stdout and locally
 /// to a file out/output.log for any searching necessary.
 fn setup_logger() -> Result<(), fern::InitError> {
-
-    // Generate the new output file path
-    let log_file_path = match cli::environment::get_or_create_log_file() {
-        Ok(path) => path,
-        Err(err) => return Err(fern::InitError::from(std::io::Error::new(std::io::ErrorKind::Other, err)))
-    };
-
     fern::Dispatch::new()
         .format(|out, message, record| {
             out.finish(format_args!(
@@ -47,7 +40,6 @@ fn setup_logger() -> Result<(), fern::InitError> {
         })
         .level(log::LevelFilter::Debug)
         .chain(std::io::stdout())
-        .chain(fern::log_file(log_file_path)?)
         .apply()?;
     Ok(())
 }
