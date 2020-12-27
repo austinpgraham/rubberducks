@@ -61,6 +61,10 @@ pub struct StartCLI {
     workers: u16
 }
 
+#[derive(Debug, StructOpt)]
+#[structopt(about = "Stop the Rubber Ducks dataserver.")]
+pub struct StopCLI {}
+
 /// Listing all options for the the dataserver subcommand.
 #[derive(Debug, StructOpt)]
 pub enum DataserverCommand {
@@ -72,7 +76,7 @@ pub enum DataserverCommand {
     RawStart(StartCLI),
 
     // Stop the server
-    Stop
+    Stop(StopCLI)
 }
 
 /// Run a dataserver command.
@@ -132,7 +136,7 @@ pub fn run_dataserver_command(command: &DataserverCLI) {
         },
 
         // Stop the server
-        DataserverCommand::Stop{} => {
+        DataserverCommand::Stop{..} => {
             // Remove the known PID file
             match remove_pid_file() {
                 Ok(pid) => {
