@@ -32,7 +32,8 @@ pub fn start_dataserver(host: &str, port: u16, workers: u16) {
        .mount("/", rocket::routes![
            health_check,
            graphql::get_graphql_handler,
-           graphql::post_graphql_handler
+           graphql::post_graphql_handler,
+           graphql::get_graphql_source
         ])
        .launch();
 }

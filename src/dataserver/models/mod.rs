@@ -1,8 +1,5 @@
 use duplicate::duplicate;
-use std::{
-    env,
-    ops::Deref
-};
+use std::env;
 use diesel::{
     pg::PgConnection,
     r2d2::{
@@ -13,6 +10,7 @@ use diesel::{
 };
 
 pub mod users;
+pub mod schema;
 
 /// We want mutations to grab a connection to the writer,
 /// while everything else gets a connection from the reader.
@@ -40,7 +38,6 @@ pub struct connection_type(pub PooledConnection<ConnectionManager<PgConnection>>
 
 pub trait DBConnection {
     fn get_connection_pool() -> PgPool;
-    fn get_pool_from_state(connection: &AuroraConnection) -> &PgPool;
 }
 
 
@@ -50,10 +47,6 @@ impl DBConnection for AuroraReaderConnection {
         let manager = ConnectionManager::<PgConnection>::new(database_url);
         Pool::new(manager).expect("Failed to create database connection pool.")
     }
-
-    fn get_pool_from_state(connection: &AuroraConnection) -> &PgPool {
-        &connection.reader
-    }
 }
 
 impl DBConnection for AuroraWriterConnection {
@@ -62,29 +55,6 @@ impl DBConnection for AuroraWriterConnection {
         let manager = ConnectionManager::<PgConnection>::new(database_url);
         Pool::new(manager).expect("Failed to create database connection pool.")
     }
-
-    fn get_pool_from_state(connection: &AuroraConnection) -> &PgPool {
-        &connection.writer
-    }
-}
-
-/// Defines a simple dereference implementation to grab out the
-/// base connection object from diesel.
-#[duplicate(connection_type; [AuroraReaderConnection]; [AuroraWriterConnection])]
-impl Deref for connection_type {
-    type Target = PgConnection;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-#[duplicate(connection_type; [AuroraReaderConnection]; [AuroraWriterConnection])]
-impl AsRef<Self> for connection_type {
-    #[inline]
-    fn as_ref(&self) -> &Self {
-        self
-    }
 }
 
 pub struct AuroraConnection {
@@ -92,11 +62,12 @@ pub struct AuroraConnection {
     pub writer: PgPool
 }
 
-impl AuroraConnection {
-    pub fn get_pool(self: &Self, c_type: ConnectionType) -> &PgPool {
-        match c_type {
-            ConnectionType::Reader => &self.reader,
-            ConnectionType::Writer => &self.writer
+#[macro_export]
+macro_rules! get_pool {
+    ($connection:expr, $connection_type:expr) => {
+        match $connection_type {
+            ConnectionType::Reader => $connection.reader.get().unwrap(),
+            ConnectionType::Writer => $connection.writer.get().unwrap()
         }
     }
 }

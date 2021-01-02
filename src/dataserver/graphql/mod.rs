@@ -1,14 +1,23 @@
 use juniper_rocket::{
     GraphQLRequest,
-    GraphQLResponse
+    GraphQLResponse,
+    graphiql_source
 };
-use rocket::State;
+use rocket::{
+    State,
+    response::content
+};
 use crate::dataserver::models::AuroraConnection;
 
 pub mod context;
 pub mod schema;
 pub mod queries;
 pub mod mutations;
+
+#[get("/graphql")]
+pub fn get_graphql_source() -> content::Html<String> {
+    graphiql_source("/graphql")
+}
 
 #[get("/?<request>")]
 pub fn get_graphql_handler(

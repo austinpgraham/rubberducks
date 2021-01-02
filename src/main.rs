@@ -8,9 +8,10 @@
 // External crates
 #[macro_use]
 extern crate log;
-
 #[macro_use]
 extern crate rocket;
+#[macro_use]
+extern crate diesel;
 
 extern crate structopt;
 extern crate fern;
