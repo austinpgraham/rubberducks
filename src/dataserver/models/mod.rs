@@ -79,7 +79,24 @@ impl Deref for connection_type {
     }
 }
 
+#[duplicate(connection_type; [AuroraReaderConnection]; [AuroraWriterConnection])]
+impl AsRef<Self> for connection_type {
+    #[inline]
+    fn as_ref(&self) -> &Self {
+        self
+    }
+}
+
 pub struct AuroraConnection {
     pub reader: PgPool,
     pub writer: PgPool
+}
+
+impl AuroraConnection {
+    pub fn get_pool(self: &Self, c_type: ConnectionType) -> &PgPool {
+        match c_type {
+            ConnectionType::Reader => &self.reader,
+            ConnectionType::Writer => &self.writer
+        }
+    }
 }

@@ -9,12 +9,14 @@
 #[macro_use]
 extern crate log;
 
+#[macro_use]
+extern crate rocket;
+
 extern crate structopt;
 extern crate fern;
 extern crate chrono;
 extern crate juniper;
 extern crate juniper_rocket;
-extern crate rocket;
 extern crate dirs;
 extern crate duplicate;
 

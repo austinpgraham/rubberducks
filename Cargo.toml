@@ -11,8 +11,8 @@ structopt = "0.3"
 fern = "0.5.8"
 log = "0.4.8"
 chrono = {version = "0.4", features = ["serde"]}
-juniper = "0.10"
-juniper_rocket = "0.2.0"
+juniper = "0.14.1"
+juniper_rocket = "0.5.1"
 rocket = "0.4.3"
 dirs = "3.0.1"
 diesel = { version = "1.4.4", features = ["postgres", "r2d2"] }

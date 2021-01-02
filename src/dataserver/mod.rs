@@ -28,6 +28,11 @@ pub fn start_dataserver(host: &str, port: u16, workers: u16) {
                         .expect("Failed to establish configuration for app.");
     let app = rocket::custom(config);
     app.manage(models::get_connection())
-       .mount("/", rocket::routes![health_check])
+       .manage(graphql::schema::create_schema())
+       .mount("/", rocket::routes![
+           health_check,
+           graphql::get_graphql_handler,
+           graphql::post_graphql_handler
+        ])
        .launch();
 }
