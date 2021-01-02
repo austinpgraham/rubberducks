@@ -9,7 +9,6 @@ use rocket::config::{
 
 pub mod models;
 pub mod graphql;
-pub mod catchers;
 pub mod guards;
 
 #[rocket::get("/health")]
@@ -28,8 +27,7 @@ pub fn start_dataserver(host: &str, port: u16, workers: u16) {
                         .finalize()
                         .expect("Failed to establish configuration for app.");
     let app = rocket::custom(config);
-    app.manage(models::get_connection(models::ConnectionType::Reader))
-       .manage(models::get_connection(models::ConnectionType::Writer))
+    app.manage(models::get_connection())
        .mount("/", rocket::routes![health_check])
        .launch();
 }

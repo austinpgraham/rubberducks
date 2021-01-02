@@ -11,16 +11,6 @@ use diesel::{
         PooledConnection
     }
 };
-use rocket::{
-    request::{
-        self,
-        FromRequest
-    },
-    http::Status,
-    Outcome,
-    Request,
-    State
-};
 
 pub mod users;
 
@@ -36,31 +26,45 @@ pub enum ConnectionType {
 pub type PgPool = Pool<ConnectionManager<PgConnection>>;
 
 /// Get the Postgres connection pool.
-pub fn get_connection(c_type: ConnectionType) -> PgPool {
-    let url_string = match c_type {
-        ConnectionType::Reader => "RD_READER_URL",
-        ConnectionType::Writer => "RD_WRITER_URL"
-    };
-    let database_url = env::var(url_string).expect("Failed to get database URL from environment.");
-    let manager = ConnectionManager::<PgConnection>::new(database_url);
-    Pool::new(manager).expect("Failed to create database connection pool.")
+pub fn get_connection() -> AuroraConnection {
+    AuroraConnection {
+        reader: AuroraReaderConnection::get_connection_pool(),
+        writer: AuroraWriterConnection::get_connection_pool()
+    }
 }
 
 /// An alias struct for a connection to Aurora in both the
 /// reader and writer instances.
-pub struct AuroraReaderConnection(pub PooledConnection<ConnectionManager<PgConnection>>);
-pub struct AuroraWriterConnection(pub PooledConnection<ConnectionManager<PgConnection>>);
-
 #[duplicate(connection_type; [AuroraReaderConnection]; [AuroraWriterConnection])]
-impl<'a, 'r> FromRequest <'a, 'r> for connection_type {
-    type Error = ();
+pub struct connection_type(pub PooledConnection<ConnectionManager<PgConnection>>);
 
-    fn from_request(request: &'a Request<'r>) -> request::Outcome<Self, Self::Error> {
-        let pool = request.guard::<State<PgPool>>()?;
-        match pool.get() {
-            Ok(conn) => Outcome::Success(connection_type(conn)),
-            Err(_) => Outcome::Failure((Status::ServiceUnavailable, ())),
-        }
+pub trait DBConnection {
+    fn get_connection_pool() -> PgPool;
+    fn get_pool_from_state(connection: &AuroraConnection) -> &PgPool;
+}
+
+
+impl DBConnection for AuroraReaderConnection {
+    fn get_connection_pool() -> PgPool {
+        let database_url = env::var("RD_READER_URL").expect("Failed to get database URL from environment.");
+        let manager = ConnectionManager::<PgConnection>::new(database_url);
+        Pool::new(manager).expect("Failed to create database connection pool.")
+    }
+
+    fn get_pool_from_state(connection: &AuroraConnection) -> &PgPool {
+        &connection.reader
+    }
+}
+
+impl DBConnection for AuroraWriterConnection {
+    fn get_connection_pool() -> PgPool {
+        let database_url = env::var("RD_WRITER_URL").expect("Failed to get database URL from environment.");
+        let manager = ConnectionManager::<PgConnection>::new(database_url);
+        Pool::new(manager).expect("Failed to create database connection pool.")
+    }
+
+    fn get_pool_from_state(connection: &AuroraConnection) -> &PgPool {
+        &connection.writer
     }
 }
 
@@ -73,4 +77,9 @@ impl Deref for connection_type {
     fn deref(&self) -> &Self::Target {
         &self.0
     }
+}
+
+pub struct AuroraConnection {
+    pub reader: PgPool,
+    pub writer: PgPool
 }
