@@ -15,4 +15,5 @@ juniper = "0.10"
 juniper_rocket = "0.2.0"
 rocket = "0.4.3"
 dirs = "3.0.1"
-diesel = { version = "1.4.4", features = ["postgres"] }
+diesel = { version = "1.4.4", features = ["postgres", "r2d2"] }
+duplicate = "0.2.9"

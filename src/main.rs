@@ -16,6 +16,7 @@ extern crate juniper;
 extern crate juniper_rocket;
 extern crate rocket;
 extern crate dirs;
+extern crate duplicate;
 
 pub mod cli;
 pub mod dataserver;
